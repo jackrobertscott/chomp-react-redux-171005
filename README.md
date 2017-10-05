@@ -46,8 +46,8 @@ src
     +-- components
         +-- ListItem.js
         +-- CupWrap.js
-        +-- EditForm.js
     +-- containers
+        +-- DrinkForm.js
         +-- DrinkList.js
         +-- DrinkCreate.js
         +-- DrinkUpdate.js
@@ -152,20 +152,20 @@ In the above example, we are also using the [redux-thunk](https://github.com/gae
 
 ## Services
 
-Services are standard implementations functions that request data from the server and return the data in a promise.
+Services are standard implementations of functions that request data from the server and return the data in a promise.
 
 `src/hotdog/hotdog.service.js`
 
 ```js
 import config from '../config';
-import { handleResponse } from '../shared/util.helper'; // this extracts the json content from the response
+import { handleResponse } from '../shared/util.helper';
 
 export const apiGetHotdogs = (token) => fetch(`${config.endpoint}/hotdogs`, {
   method: 'GET',
   headers: {
     'Authorization': token,
   },
-}).then(handleResponse);
+}).then(handleResponse); // this extracts the json content from the response
 
 export const apiCreateHotdog = (token, hotdog) => fetch(`${config.endpoint}/hotdogs`, {
   method: 'POST',
@@ -173,18 +173,21 @@ export const apiCreateHotdog = (token, hotdog) => fetch(`${config.endpoint}/hotd
     'Authorization': token,
   },
   body: JSON.stringify(hotdog),
-}).then(handleResponse);
+}).then(handleResponse); // this extracts the json content from the response
 ```
 
 ## Containers vs Components
 
-Components should be split into smart `containers` which handle data and dumb `components` which handle presentation. There is a good post on it [here](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0). The *main* difference between containers and components is that containers **pull** or access the redux state. Therefore, when it may be confusing if a component is a container or a component, ask that question.
+Components should be split into smart `containers` which handle data and dumb `components` which handle presentation. There is a good post on it [here](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0). The *main* difference between containers and components is that containers change or request the redux state, where as components are encapsulated and pure.
+
+> I call components encapsulated React components that are driven solely by props and don't talk to Redux. Same as “dumb components”. They should stay the same regardless of your router, data fetching library, etc.
+>
+> I call containers React components that are aware of Redux, Router, etc. They are more coupled to the app. Same as “smart components”.
+> ~ [gaearon](https://github.com/gaearon)
 
 ## Routing
 
-Routing components are the entry point to your feature and should **only** handle routing and layout. Any action dispatches should be handled in a sub-container.
-
-> TODO: should routing components be containers or components? - there are circumstances when they don't pull the state of the app (so should be component) however, components should not be used outside the feature. What do?
+Routing components are the entry point to your feature and should **only** handle routing and layout. Any action dispatches should be handled in a sub-container. As route components effect and are aware of the application's infrustructure and directly relate other containers to the view, we consider these components also as *containers*.
 
 `src/hotdog/containers/HotdogRoutes.js`
 
@@ -216,7 +219,12 @@ export default HotdogRoutes;
 
 ## Forms
 
-Forms should consist of at least 2 components; the logic layer and the presentational layer. The logic layer determines what the form should do once it has been submitted and how it will update the redux state. The logic layer is a `container` component. 
+Forms should consist of at least 2 component layers:
+
+1. The *logic* layer 
+2. The *interface* layer
+
+The logic layer determines how the values in the form are handled, loaded, and changed. It directly dispatches actions to affect and load from the redux state. The logic layer also loads in the correct interface layer to present the form.
 
 `src/hotdog/containers/HotdogCreate.js`
 
@@ -270,9 +278,9 @@ const mapDispatchToProps = { attemptCreateHotdog };
 export default connect(mapStateToProps, mapDispatchToProps)(HotdogCreate);
 ```
 
-The presentational layer is merely the form inputs and validations of those inputs. They do not *pull* the state. When the form is submitted, it will call a submit handler function passed to it by the logical component. These presentational form components can be reused by multiple logical components e.g. `HotdogCreate` and `HotdogEdit`.
+The interface layer controls the form inputs and validations of those inputs. They do not *pull* the state. When the form is submitted, it will call a submit handler function passed to it by the logical layer. These interface layer form components can be reused by multiple logical components e.g. `HotdogCreate` and `HotdogEdit`.
 
-`src/hotdog/components/SimpleForm.js`
+`src/hotdog/containers/HotdogSimpleForm.js`
 
 ```js
 import React from 'react';
@@ -280,7 +288,7 @@ import PropTypes from 'prop-types';
 import { reduxForm } from 'redux-form';
 import * as Formed from '../../shared/components/Formed'; // styled form components
 
-const SimpleForm = ({ handleSubmit, loading, problem }) => (
+const HotdogSimpleForm = ({ handleSubmit, loading, problem }) => (
   <form onSubmit={ handleSubmit }>
     <Formed.Control>
       <Formed.Label htmlFor="name">Name</Formed.Label>
@@ -291,7 +299,7 @@ const SimpleForm = ({ handleSubmit, loading, problem }) => (
   </form>
 );
 
-SimpleForm.propTypes = {
+HotdogSimpleForm.propTypes = {
   handleSubmit: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
   problem: PropTypes.shape({
@@ -299,14 +307,14 @@ SimpleForm.propTypes = {
   }),
 };
 
-SimpleForm.defaultProps = {
+HotdogSimpleForm.defaultProps = {
   problem: null,
 };
 
-export default reduxForm({ form: 'hotdogSimple' })(SimpleForm);
+export default reduxForm({ form: 'hotdogSimple' })(HotdogSimpleForm);
 ```
 
-It is a good React convention to keep forms related to the state of the app. To do this, we use the [redux-form](https://redux-form.com/) helper library. However, as per the above example, the higher order component of `reduxForm` is pushing data to the redux state. This begs the question, is this component a `container` instead? No. As per our golden rule, the question is "does our component *pull* from the state?" and it does not.
+It is a good convention to keep forms related to the state of the app so the rest of the app can correctly access the data if they need to. To do this, we use the [redux-form](https://redux-form.com/) helper library. As per the above example, the higher order component of `reduxForm` is pushing data to the redux state. The application is aware of the form and therefore the interface layer component is considered as a *container* as well.
 
 ---
 
