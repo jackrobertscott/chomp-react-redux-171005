@@ -61,6 +61,93 @@ src
 
 ## Reducers
 
+This is mostly inpsired by the [Ducks](https://github.com/erikras/ducks-modular-redux) proposal.
+
+As applications grow, it becomes increasingly difficult to ensure good code quality and maintenance. As such, we recommend using helper libraries such as [redux-actions](https://github.com/reduxactions/redux-actions) to encourage better code quality and reduce unneeded flexibility. It is also imporant to keep the layout of the file structured and easy to read so that making changes is simple.
+
+```js
+import { createAction, handleActions } from 'redux-actions';
+import { apiGetHotdogs, apiCreateHotdog } from './hotdog.service';
+
+/**
+ * Initial state
+ */
+const initialState = {
+  hotdogs: [],
+  current: null,
+  loading: false,
+  success: false,
+  problem: null, // use "problem" instead of "error" as error causes issues when passed as prop
+};
+
+/**
+ * Constants
+ */
+export const HOTDOGS_LOADING = 'HOTDOGS_LOADING';
+export const HOTDOGS_GET = 'HOTDOGS_GET';
+export const HOTDOG_CREATE = 'HOTDOG_CREATE';
+
+/**
+ * Actions
+ * 
+ * These describe what happened.
+ */
+export const loadingHotdogs = createAction(HOTDOGS_LOADING);
+export const getHotdogs = createAction(HOTDOGS_GET, apiGetHotdogs);
+export const createHotdog = createAction(HOTDOG_CREATE, apiCreateHotdog);
+
+/**
+ * Thunks
+ * 
+ * The return value of the inner function should be a promise. The dispatch function
+ * returns the value of the function from within it. This allows us to chain dispatch functions.
+ */
+export const attemptGetHotdogs = () => (dispatch, getState) => {
+  dispatch(loadingHotdogs());
+  const { token, userId } = getState().player.auth;
+  return dispatch(getHotdogs(token, userId));
+};
+export const attemptCreateHotdog = () => (dispatch, getState) => {
+  dispatch(loadingHotdogs());
+  const state = getState();
+  const { token, userId } = state.player.auth;
+  const body = { ...state.form.hotdog.values };
+  return dispatch(createHotdog(token, userId, body));
+};
+
+/**
+ * Reducer
+ * 
+ * All reducer functions should be pure. They describe how the state is mutated.
+ */
+export default handleActions({
+
+  [HOTDOGS_LOADING]: (state) => ({
+    ...state,
+    loading: true,
+    problem: null,
+    success: false,
+  }),
+
+  [HOTDOGS_GET]: (state, { payload, error }) => ({
+    ...state,
+    loading: false,
+    hotdogs: error ? [] : payload,
+    problem: error ? payload : null,
+  }),
+
+  [HOTDOG_CREATE]: (state, { payload, error }) => ({
+    ...state,
+    loading: false,
+    problem: error ? payload : null,
+    success: !error,
+  }),
+
+}, initialState);
+```
+
+In the above example, we are also using the [redux-thunk](https://github.com/gaearon/redux-thunk) and [redux-promise](https://github.com/acdlite/redux-promise) middleware. This allows us to handle the execution of multiple action and access service function with ease.
+
 ## Services
 
 ## Containers vs Components
