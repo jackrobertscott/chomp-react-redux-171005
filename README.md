@@ -4,7 +4,7 @@
 
 ### Take the bite out of React and Redux
 
-React is an unopinionated framework. This means that when it comes to building apps, a lot of time is spent deciding on the best way to approach developing specific features e.g. should component files be named `HotdogList.js`, `hotdogList.js`, `hotdog.list.js` etc. This results in hours of frustration, sloppy code, and a whole bunch of wasted time and *many* sleepless nights.
+React is an unopinionated framework. This means that when it comes to building apps, a lot of time is spent deciding on the best way to approach developing specific features e.g. should component files be named `HotdogList.js`, `hotdogList.js`, `hotdog.list.js` etc. This results in hours of frustration, sloppy code, a whole bunch of wasted time and *many* sleepless nights.
 
 Ruby on Rails adopted the doctrine of **convention over configuration**. This basically means that they have strict guidelines on how features may be developed. They show exactly how variables need to be defined, how validations should be made, what the folder structure must be, and everything inbetween. As such, because developers don't need to think about these trivial development decisions, they have been able to:
 
@@ -174,6 +174,38 @@ export const apiCreateHotdog = (token, hotdog) => fetch(`${config.endpoint}/hotd
 
 ## Containers vs Components
 
+Components should be split into smart `containers` which handle data and dumb `components` which handle presentation. There is a good post on it [here](https://medium.com/@dan_abramov/smart-and-dumb-components-7ca2f9a7c7d0). The *main* difference between containers and components is that containers **pull** or access the redux state. Therefore, when it may be confusing if a component is a container or a component, ask that question.
+
 ## Routing
+
+Routing components are the entry point to your feature and should **only** handle routing and layout. Any action dispatches should be handled in a sub-container. The routing files should 
+
+> TODO: should routing components be containers or components? - there are circumstances when they don't pull the state of the app (so should be component) however, components should not be used outside the feature. What do?
+
+```js
+import React from 'react';
+import PropTypes from 'prop-types';
+import { Switch, Route, Redirect } from 'react-router-dom';
+import HotdogList from './HotdogList';
+import HotdogCreate from './HotdogCreate';
+
+function HotdogRoutes({ match }) {
+  return (
+    <Switch>
+      <Route path={ match.url } exact component={ HotdogList } />
+      <Route path={ `${match.url}/create` } component={ HotdogCreate } />
+      <Redirect to={ match.url } />
+    </Switch>
+  );
+}
+
+HotdogRoutes.propTypes = {
+  match: PropTypes.shape({
+    url: PropTypes.string.isRequired,
+  }).isRequired,
+};
+
+export default HotdogRoutes;
+```
 
 ## Forms
