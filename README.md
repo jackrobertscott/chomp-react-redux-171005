@@ -191,7 +191,7 @@ Routing components are the entry point to your feature and should **only** handl
 
 `src/hotdog/containers/HotdogRoutes.js`
 
-```js
+```jsx
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Switch, Route, Redirect } from 'react-router-dom';
@@ -228,7 +228,7 @@ The logic layer determines how the values in the form are handled, loaded, and c
 
 `src/hotdog/containers/HotdogCreate.js`
 
-```js
+```jsx
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -282,7 +282,7 @@ The interface layer controls the form inputs and validations of those inputs. Th
 
 `src/hotdog/containers/HotdogSimpleForm.js`
 
-```js
+```jsx
 import React from 'react';
 import PropTypes from 'prop-types';
 import { reduxForm } from 'redux-form';
