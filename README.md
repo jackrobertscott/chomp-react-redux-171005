@@ -182,7 +182,7 @@ Components should be split into smart `containers` which handle data and dumb `c
 
 ## Routing
 
-Routing components are the entry point to your feature and should **only** handle routing and layout. Any action dispatches should be handled in a sub-container. The routing files should 
+Routing components are the entry point to your feature and should **only** handle routing and layout. Any action dispatches should be handled in a sub-container.
 
 > TODO: should routing components be containers or components? - there are circumstances when they don't pull the state of the app (so should be component) however, components should not be used outside the feature. What do?
 
@@ -270,7 +270,7 @@ const mapDispatchToProps = { attemptCreateHotdog };
 export default connect(mapStateToProps, mapDispatchToProps)(HotdogCreate);
 ```
 
-The presentational layer is merely the form inputs and validations of those inputs. They do not *pull* the redux state. When the form is submitted, it will call a submit handler function passed to it by the logical component.
+The presentational layer is merely the form inputs and validations of those inputs. They do not *pull* the state. When the form is submitted, it will call a submit handler function passed to it by the logical component. These presentational form components can be reused by multiple logical components e.g. `HotdogCreate` and `HotdogEdit`.
 
 `src/hotdog/components/SimpleForm.js`
 
@@ -310,4 +310,4 @@ It is a good React convention to keep forms related to the state of the app. To 
 
 ---
 
-**Taking the bite out of React and Redux since 2017 :crocodile:**
+**Taking the bite out of React and Redux :crocodile:**
