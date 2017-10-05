@@ -2,7 +2,7 @@
 
 <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/21/Emoji_u1f40a.svg/600px-Emoji_u1f40a.svg.png" width="200px" align="right" />
 
-### Take the bite out of React and Redux
+### Convention over configuration approach to React and Redux
 
 React is an unopinionated framework. This means that when it comes to building apps, a lot of time is spent deciding on the best way to approach developing specific features e.g. should component files be named `HotdogList.js`, `hotdogList.js`, `hotdog.list.js` etc. This results in hours of frustration, sloppy code, a whole bunch of wasted time and *many* sleepless nights.
 
@@ -307,3 +307,5 @@ export default reduxForm({ form: 'hotdogSimple' })(SimpleForm);
 ```
 
 It is a good React convention to keep forms related to the state of the app. To do this, we use the [redux-form](https://redux-form.com/) helper library. However, as per the above example, the higher order component of `reduxForm` is pushing data to the redux state. This begs the question, is this component a `container` instead? No. As per our golden rule, the question is "does our component *pull* from the state?" and it does not.
+
+> Taking the bite out of React and Redux since 2017 :crocodile:
