@@ -16,6 +16,49 @@ I'm not saying we should adopt the same conventions as Rails but we should defin
 
 ## File Structure
 
+Organise your files by feature. This makes it a lot easier to:
+
+1. Find the files you need
+2. Name your files
+3. Manage folder sizes on large scale applications
+4. Share specific modules between multiple applications
+
+The folder structure rules are as such:
+
+1. Root folders should be the singular name of the feature
+2. All files that do not fit in a specific feature folder go in the `shared` folder
+3. Helper files should be formatted as `<feature>.<type>.js` e.g. `hotdog.reducer.js`
+4. There should be a `components` and `containers` set of folders in each feature
+5. Container (smart) file names should be formatted as `<Feature><Action>.js`
+6. Component (dumb) file names should be formatted as `<Description><Type>.js`
+
+```
+src
++-- hotdog
+    +-- components // do not include feature name in component name as should not use outside feature
+        +-- GoodButton.js
+    +-- containers // format of file names should be <Feature><Action>
+        +-- HotdogList.js
+        +-- HotdogUpdate.js
+    +-- hotdog.reducer.js
+    +-- hotdog.service.js
++-- drink
+    +-- components
+        +-- ListItem.js
+        +-- CupWrap.js
+        +-- EditForm.js
+    +-- containers
+        +-- DrinkList.js
+        +-- DrinkCreate.js
+        +-- DrinkUpdate.js
++-- shared // where all files that don't belong to a specific feature should go
+    +-- components
+        +-- CommonButton.js
+    +-- containers
+        +-- App.js
+    +-- utils.helper.js
+```
+
 ## Reducers
 
 ## Services
