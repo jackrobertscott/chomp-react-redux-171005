@@ -104,15 +104,15 @@ export const createHotdog = createAction(HOTDOG_CREATE, apiCreateHotdog);
  */
 export const attemptGetHotdogs = () => (dispatch, getState) => {
   dispatch(loadingHotdogs());
-  const { token, userId } = getState().player.auth;
-  return dispatch(getHotdogs(token, userId));
+  const { token } = getState().user.auth;
+  return dispatch(getHotdogs(token));
 };
 export const attemptCreateHotdog = () => (dispatch, getState) => {
   dispatch(loadingHotdogs());
   const state = getState();
-  const { token, userId } = state.player.auth;
-  const body = { ...state.form.hotdog.values };
-  return dispatch(createHotdog(token, userId, body));
+  const { token } = state.user.auth;
+  const hotdog = { ...state.form.hotdog.values }; // get values from 'redux-form' form
+  return dispatch(createHotdog(token, hotdog));
 };
 
 /**
@@ -149,6 +149,28 @@ export default handleActions({
 In the above example, we are also using the [redux-thunk](https://github.com/gaearon/redux-thunk) and [redux-promise](https://github.com/acdlite/redux-promise) middleware. This allows us to handle the execution of multiple action and access service function with ease.
 
 ## Services
+
+Services are standard implementations functions that request data from the server and return the data in a promise.
+
+```js
+import config from '../config';
+import { handleResponse } from '../shared/util.helper'; // this extracts the json content from the response
+
+export const apiGetHotdogs = (token) => fetch(`${config.endpoint}/hotdogs`, {
+  method: 'GET',
+  headers: {
+    'Authorization': token,
+  },
+}).then(handleResponse);
+
+export const apiCreateHotdog = (token, hotdog) => fetch(`${config.endpoint}/hotdogs`, {
+  method: 'POST',
+  headers: {
+    'Authorization': token,
+  },
+  body: JSON.stringify(hotdog),
+}).then(handleResponse);
+```
 
 ## Containers vs Components
 
