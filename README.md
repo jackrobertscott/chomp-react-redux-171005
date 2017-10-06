@@ -65,6 +65,20 @@ This is mostly inpsired by the [Ducks](https://github.com/erikras/ducks-modular-
 
 As applications grow, it becomes increasingly difficult to ensure good code quality and maintenance. As such, we recommend using helper libraries such as [redux-actions](https://github.com/reduxactions/redux-actions) to encourage better code quality and reduce unneeded flexibility. It is also imporant to keep the layout of the file structured and easy to read so that making changes is simple.
 
+Shoulds:
+
+1. Do create an initial state
+2. Do use the property `problem` instead of `error` for setting and error in the state
+3. Do use the [redux-actions](https://github.com/reduxactions/redux-actions) library
+4. Do name the file `<feature>.reducer.js` e.g. `hotdog.reducer.js` or `drink.reducer.js`
+5. Do keep your reducer functions pure
+6. Do use descriptive constants e.g. `HOTDOGS_LOADING`
+
+Should **nots**:
+
+1. Don't be sloppy, keep the types (constants, actions, etc.) seperate so other developers can easily read
+2. Don't use undescriptive constants e.g. `LOAD` or `CREATE` as we might want to export them to other reducers
+
 `src/hotdog/hotdog.reducer.js`
 
 ```js
@@ -107,13 +121,13 @@ export const createHotdog = createAction(HOTDOG_CREATE, apiCreateHotdog);
 export const attemptGetHotdogs = () => (dispatch, getState) => {
   dispatch(loadingHotdogs());
   const { token } = getState().user.auth;
-  return dispatch(getHotdogs(token));
+  return dispatch(getHotdogs(token)); // return dispatch and the thunk will return value of action
 };
 export const attemptCreateHotdog = () => (dispatch, getState) => {
   dispatch(loadingHotdogs());
   const state = getState();
   const { token } = state.user.auth;
-  const hotdog = { ...state.form.hotdog.values }; // get values from 'redux-form' form
+  const hotdog = { ...state.form.hotdogSimple.values }; // get values from 'redux-form' form
   return dispatch(createHotdog(token, hotdog));
 };
 
@@ -154,6 +168,16 @@ In the above example, we are also using the [redux-thunk](https://github.com/gae
 
 Services are standard implementations of functions that request data from the server and return the data in a promise.
 
+Shoulds:
+
+1. Do name the file `<feature>.service.js` e.g. `hotdog.service.js` or `drink.service.js`
+2. Do convert the service values from JSON or XML to JavaScript objects (in the `handleResponse` method)
+3. Do use a *config* value for setting the endpoint in the fetch calls
+
+Should **nots**:
+
+1. Don't put application logic inside these files, keep them encapsulated so we can swap them in and out as we want
+
 `src/hotdog/hotdog.service.js`
 
 ```js
@@ -188,6 +212,17 @@ Components should be split into smart `containers` which handle data and dumb `c
 ## Routing
 
 Routing components are the entry point to your feature and should **only** handle routing and layout. Any action dispatches should be handled in a sub-container. As route components effect and are aware of the application's infrustructure and directly relate other containers to the view, we consider these components also as *containers*.
+
+Shoulds:
+
+1. Do only handle routing and layout
+2. Do put it in the containers folder
+3. Do name the file `<Feature>[<Type>]Routes.js` e.g. `HotdogRoutes.js` or `DrinkSidebarRoutes.js`
+
+Should **nots**:
+
+1. Don't handle dispatching of actions in these components
+2. Don't style the component (style the sub-components)
 
 `src/hotdog/containers/HotdogRoutes.js`
 
