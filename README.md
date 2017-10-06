@@ -61,7 +61,7 @@ src
 
 ## Reducers
 
-This is mostly inpsired by the [Ducks](https://github.com/erikras/ducks-modular-redux) proposal.
+This is mostly inspired by the [Ducks](https://github.com/erikras/ducks-modular-redux) proposal.
 
 As applications grow, it becomes increasingly difficult to ensure good code quality and maintenance. As such, we recommend using helper libraries such as [redux-actions](https://github.com/reduxactions/redux-actions) to encourage better code quality and reduce unneeded flexibility. It is also imporant to keep the layout of the file structured and easy to read so that making changes is simple.
 
