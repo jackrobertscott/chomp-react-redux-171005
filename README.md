@@ -183,7 +183,7 @@ Should **nots**:
 ```js
 import config from '../config';
 
-export const handleResponse = async (res) => {
+async function handleResponse(res) {
   if (res.status === 204) return {};
   const data = await res.json();
   if (res.ok) return data;
