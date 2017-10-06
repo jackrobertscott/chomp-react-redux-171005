@@ -182,7 +182,13 @@ Should **nots**:
 
 ```js
 import config from '../config';
-import { handleResponse } from '../shared/util.helper';
+
+export const handleResponse = async (res) => {
+  if (res.status === 204) return {};
+  const data = await res.json();
+  if (res.ok) return data;
+  throw data.error;
+};
 
 export const apiGetHotdogs = (token) => fetch(`${config.endpoint}/hotdogs`, {
   method: 'GET',
