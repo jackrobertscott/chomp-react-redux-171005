@@ -237,6 +237,15 @@ Components should be split into smart `containers` which handle data and dumb `c
 > I call containers React components that are aware of Redux, Router, etc. They are more coupled to the app. Same as “smart components”.
 > ~ [gaearon](https://github.com/gaearon)
 
+Importantly, anything a component needs to render should be passed in via its props. You should avoid
+relying on `context` within components because `context` is effectively implicit global state. Doing
+so will have profoundly bad consequences if any components in the component tree implement
+[`shouldComponentUpdate`](https://github.com/facebook/react/issues/2517). This means
+that components should **not** make use of `connect` or `withRouter` such that all components
+are able to make use of `shouldComponentUpdate` without consequences. If you need to pass down
+state or dispathc functions from the redux state, pass it down the props tree explicitly
+from the container which was connected.
+
 ## Routing
 
 Routing components are the entry point to your feature and should **only** handle routing and layout. Any action dispatches should be handled in a sub-container. As route components effect and are aware of the application's infrustructure and directly relate other containers to the view, we consider these components also as *containers*.
