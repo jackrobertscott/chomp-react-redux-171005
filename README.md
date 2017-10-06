@@ -67,22 +67,25 @@ As applications grow, it becomes increasingly difficult to ensure good code qual
 
 Shoulds:
 
-1. Do create an initial state
+1. Do name the file `<feature>.reducer.js` e.g. `hotdog.reducer.js` or `drink.reducer.js`
 2. Do use the property `problem` instead of `error` for setting and error in the state
-3. Do use the [redux-actions](https://github.com/reduxactions/redux-actions) library
-4. Do name the file `<feature>.reducer.js` e.g. `hotdog.reducer.js` or `drink.reducer.js`
-5. Do keep your reducer functions pure
-6. Do use descriptive constants e.g. `HOTDOGS_LOADING`
+3. Do use descriptive constants e.g. `HOTDOGS_LOADING`
+4. Do use the [redux-actions](https://github.com/reduxactions/redux-actions)
+5. Do make sure your reducer functions and action creators are **pure**
+6. Do use [redux-thunk](https://github.com/gaearon/redux-thunk) to make functions with multiple dispatch calls
+7. Do prepend thunk functions with `attempt` e.g. `attemptCreateHotdog()`
 
 Should **nots**:
 
 1. Don't be sloppy, keep the types (constants, actions, etc.) seperate so other developers can easily read
 2. Don't use undescriptive constants e.g. `LOAD` or `CREATE` as we might want to export them to other reducers
+3. Don't use libraries like redux-promise as they do *not* create pure actions
 
 `src/hotdog/hotdog.reducer.js`
 
 ```js
 import { createAction, handleActions } from 'redux-actions';
+import { reset as resetForm } from 'redux-form';
 import { apiGetHotdogs, apiCreateHotdog } from './hotdog.service';
 
 /**
@@ -91,26 +94,30 @@ import { apiGetHotdogs, apiCreateHotdog } from './hotdog.service';
 const initialState = {
   hotdogs: [],
   current: null,
+  problem: null, // use "problem" instead of "error" as error causes issues when passed as prop
   loading: false,
   success: false,
-  problem: null, // use "problem" instead of "error" as error causes issues when passed as prop
 };
 
 /**
  * Constants
  */
-export const HOTDOGS_LOADING = 'HOTDOGS_LOADING';
-export const HOTDOGS_GET = 'HOTDOGS_GET';
-export const HOTDOG_CREATE = 'HOTDOG_CREATE';
+export const HOTDOG_RESET = 'HOTDOG_RESET';
+export const HOTDOG_LOADING = 'HOTDOG_LOADING';
+export const HOTDOG_ERRORED = 'HOTDOG_ERRORED';
+export const HOTDOG_SET = 'HOTDOG_SET';
+export const HOTDOG_CURRENT = 'HOTDOG_CURRENT';
 
 /**
  * Actions
  * 
  * These describe what happened.
  */
-export const loadingHotdogs = createAction(HOTDOGS_LOADING);
-export const getHotdogs = createAction(HOTDOGS_GET, apiGetHotdogs);
-export const createHotdog = createAction(HOTDOG_CREATE, apiCreateHotdog);
+export const resetHotdog = createAction(HOTDOG_RESET);
+export const loadingHotdog = createAction(HOTDOG_LOADING);
+export const erroredHotdog = createAction(HOTDOG_ERRORED);
+export const setHotdog = createAction(HOTDOG_SET);
+export const currentHotdog = createAction(HOTDOG_CURRENT);
 
 /**
  * Thunks
@@ -118,17 +125,31 @@ export const createHotdog = createAction(HOTDOG_CREATE, apiCreateHotdog);
  * The return value of the inner function should be a promise. The dispatch function
  * returns the value of the function from within it. This allows us to chain dispatch functions.
  */
-export const attemptGetHotdogs = () => (dispatch, getState) => {
-  dispatch(loadingHotdogs());
-  const { token } = getState().user.auth;
-  return dispatch(getHotdogs(token)); // return dispatch and the thunk will return value of action
+export const attemptGetHotdogs = () => async (dispatch, getState) => {
+  dispatch(loadingHotdog());
+  try {
+    const { token } = getState().player.auth;
+    const hotdogs = await apiGetHotdogs(token);
+    dispatch(setHotdog(hotdogs));
+  } catch (error) {
+    dispatch(erroredHotdog(error));
+  }
+  dispatch(loadingHotdog(false));
 };
-export const attemptCreateHotdog = () => (dispatch, getState) => {
-  dispatch(loadingHotdogs());
-  const state = getState();
-  const { token } = state.user.auth;
-  const hotdog = { ...state.form.hotdogSimple.values }; // get values from 'redux-form' form
-  return dispatch(createHotdog(token, hotdog));
+export const attemptCreateHotdog = () => async (dispatch, getState) => {
+  dispatch(loadingHotdog());
+  try {
+    const state = getState();
+    const { token } = state.player.auth;
+    const formName = 'hotdogSimple';
+    const body = { ...state.form[formName].values };
+    const hotdog = await apiCreateHotdog(token, body);
+    dispatch(currentHotdog(hotdog));
+    dispatch(resetForm(formName));
+  } catch (error) {
+    dispatch(erroredHotdog(error));
+  }
+  dispatch(loadingHotdog(false));
 };
 
 /**
@@ -138,31 +159,32 @@ export const attemptCreateHotdog = () => (dispatch, getState) => {
  */
 export default handleActions({
 
-  [HOTDOGS_LOADING]: (state) => ({
-    ...state,
-    loading: true,
-    problem: null,
-    success: false,
+  [HOTDOG_RESET]: () => ({
+    ...initialState,
   }),
 
-  [HOTDOGS_GET]: (state, { payload, error }) => ({
+  [HOTDOG_LOADING]: (state, { payload = true }) => ({
     ...state,
-    loading: false,
-    hotdogs: error ? [] : payload,
-    problem: error ? payload : null,
+    loading: payload,
   }),
 
-  [HOTDOG_CREATE]: (state, { payload, error }) => ({
+  [HOTDOG_ERRORED]: (state, { payload = null }) => ({
     ...state,
-    loading: false,
-    problem: error ? payload : null,
-    success: !error,
+    problem: payload,
+  }),
+
+  [HOTDOG_SET]: (state, { payload = [] }) => ({
+    ...state,
+    hotdogs: payload,
+  }),
+
+  [HOTDOG_CURRENT]: (state, { payload = null }) => ({
+    ...state,
+    current: payload,
   }),
 
 }, initialState);
 ```
-
-In the above example, we are also using the [redux-thunk](https://github.com/gaearon/redux-thunk) and [redux-promise](https://github.com/acdlite/redux-promise) middleware. This allows us to handle the execution of multiple action and access service function with ease.
 
 ## Services
 
